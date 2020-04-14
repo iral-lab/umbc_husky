@@ -25,11 +25,10 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 -->
 <robot name="husky" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:arg name="laser_enabled" default="false" />
   <xacro:arg name="laser_xyz" default="$(optenv HUSKY_LMS1XX_XYZ 0.2206 0.0 0.00635)" />
   <xacro:arg name="laser_rpy" default="$(optenv HUSKY_LMS1XX_RPY 0.0 0.0 0.0)" />
 
-  <xacro:arg name="kinect_enabled" default="true" />
+  <xacro:arg name="arm_enabled" default="true" />
   <xacro:arg name="kinect_xyz" default="$(optenv HUSKY_KINECT_XYZ 0 0 0)" />
   <xacro:arg name="kinect_rpy" default="$(optenv HUSKY_KINECT_RPY 0 0.18 3.14)" />
 
@@ -135,17 +134,17 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   </xacro:husky_wheel>
   <xacro:husky_decorate />
 
-  <xacro:if value="$(arg kinect_enabled)">
-    <xacro:sensor_arch prefix="" parent="top_plate_link">
-      <origin xyz="-0.35 0 0.51" rpy="0 0 -3.14"/>
-    </xacro:sensor_arch>
-    <joint name="kinect_frame_joint" type="fixed">
-      <origin xyz="$(arg kinect_xyz)" rpy="$(arg kinect_rpy)" />
-      <parent link="sensor_arch_mount_link"/>
-      <child link="camera_link"/>
-    </joint>
-    <xacro:kinect_camera prefix="camera" robot_namespace="$(arg robot_namespace)"/>
-  </xacro:if>
+
+  <xacro:sensor_arch prefix="" parent="top_plate_link">
+    <origin xyz="-0.35 0 0.51" rpy="0 0 -3.14"/>
+  </xacro:sensor_arch>
+  <joint name="kinect_frame_joint" type="fixed">
+    <origin xyz="$(arg kinect_xyz)" rpy="$(arg kinect_rpy)" />
+    <parent link="sensor_arch_mount_link"/>
+    <child link="camera_link"/>
+  </joint>
+  <xacro:kinect_camera prefix="camera" robot_namespace="$(arg robot_namespace)"/>
+
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
@@ -224,14 +223,16 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     <origin xyz="-0.30 0.0 0.59" rpy="-1.57079633 0 -1.57079633" />
   </joint>
 
-  <!-- Create a fixed joint to connect the Jaco to the rest of the robot -->
-  <xacro:include filename="$(find kinova_description)/urdf/j2n6s300.xacro" /> 
-  <link name="right_arm_link"/>
-  <joint name="top_plate_to_right_arm" type="fixed">
-    <parent link="top_plate_link"/>
-    <child link="right_arm_link"/>
-    <origin xyz="0.21 -0.197 0.315" rpy="0 0 1.57079633" />
-  </joint>
-  <xacro:j2n6s300 base_parent="right_arm_link" prefix="j2n6s300" />
+  <xacro:if value="$(arg arm_enabled)">
+    <!-- Create a fixed joint to connect the Jaco to the rest of the robot -->
+    <xacro:include filename="$(find kinova_description)/urdf/j2n6s300.xacro" /> 
+    <link name="right_arm_link"/>
+    <joint name="top_plate_to_right_arm" type="fixed">
+      <parent link="top_plate_link"/>
+      <child link="right_arm_link"/>
+      <origin xyz="0.21 -0.197 0.315" rpy="0 0 1.57079633" />
+    </joint>
+    <xacro:j2n6s300 base_parent="right_arm_link" prefix="j2n6s300" />
+  </xacro:if >
 
 </robot>

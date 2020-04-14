@@ -8,8 +8,8 @@
   <arg name="config_extras"
        default="$(eval optenv('HUSKY_CONFIG_EXTRAS', find('husky_control') + '/config/empty.yaml'))"/>
 
-  <arg name="laser_enabled" default="$(optenv HUSKY_LMS1XX_ENABLED false)"/>
-  <arg name="kinect_enabled" default="$(optenv HUSKY_KINECT_ENABLED false)"/>
+  <arg name="arm_enabled" default="true"/>
+  <arg name="kinova_robotType" default="j2n6s300"/>
   <arg name="urdf_extras" default="$(optenv HUSKY_URDF_EXTRAS)"/>
 
   <include file="$(find multimaster_launch)/launch/multimaster_robot.launch" if="$(arg multimaster)">
@@ -21,17 +21,29 @@
 
   <!-- Load robot description -->
   <include file="$(find umbc_husky)/launch/description.launch" >
-    <arg name="laser_enabled" default="$(arg laser_enabled)"/>
-    <arg name="kinect_enabled" default="$(arg kinect_enabled)"/>
+    <arg name="arm_enabled" default="$(arg arm_enabled)"/>
     <arg name="urdf_extras" default="$(arg urdf_extras)"/>
   </include>
 
+
+  <!-- Load controllers for arm (trajectory controllers)-->
+  <!--   <rosparam command="load" file="$(find kinova_control)/config/$(arg kinova_robotType)_control.yaml" />
+  <node name="$(arg kinova_robotType)_trajectory_controller" pkg="controller_manager" type="spawner" ns="$(arg kinova_robotType)"
+        args="effort_joint_trajectory_controller
+              effort_finger_trajectory_controller    
+              finger_tip_1_position_controller
+              finger_tip_2_position_controller 
+              finger_tip_3_position_controller
+              joint_state_controller"/>-->
+
+  <node name="base_controller_spawner" pkg="controller_manager" type="spawner"
+        args="husky_joint_publisher
+              husky_velocity_controller"/> 
+
   <!-- Load controller configuration -->
   <rosparam command="load" file="$(find husky_control)/config/control.yaml" />
+  <!-- <rosparam command="load" file="$(find umbc_husky)/config/$(arg kinova_robotType)_control.yaml" /> -->
 
-  <!-- Spawn controllers -->
-  <node name="base_controller_spawner" pkg="controller_manager" type="spawner"
-        args="husky_joint_publisher husky_velocity_controller"/>
 
   <!-- Start EKF for localization -->
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization">
@@ -46,6 +58,10 @@
     <rosparam command="load" file="$(find husky_control)/config/twist_mux.yaml" />
     <remap from="cmd_vel_out" to="husky_velocity_controller/cmd_vel"/>
   </node>
+  
+  <!-- <node name="command_robot_home_pose" pkg="kinova_control" type="move_robot.py"
+        respawn="false" output="screen" args="$(arg kinova_robotType)">       
+  </node> -->
 
   <!-- Override the default control parameters, see config/empty.yaml for default. -->
   <rosparam command="load" file="$(arg config_extras)" />

@@ -34,16 +34,15 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <arg name="z" default="1.0"/>
   <arg name="yaw" default="0.0"/>
 
-  <arg name="laser_enabled" default="false"/>
-  <arg name="kinect_enabled" default="true"/>
+  <arg name="kinova_robotType" default="j2n6s300"/>
+  <arg name="arm_enabled" default="true"/>
   <arg name="urdf_extras" default="$(optenv HUSKY_URDF_EXTRAS)"/>
 
   <group ns="$(arg robot_namespace)">
     <group if="$(arg multimaster)">
       <include file="$(find umbc_husky)/launch/description.launch" >
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
-        <arg name="laser_enabled" default="$(arg laser_enabled)"/>
-        <arg name="kinect_enabled" default="$(arg kinect_enabled)"/>
+        <arg name="arm_enabled" default="$(arg arm_enabled)"/>
         <arg name="urdf_extras" default="$(arg urdf_extras)"/>
       </include>
       <include file="$(find multimaster_launch)/launch/multimaster_gazebo_robot.launch">
@@ -60,40 +59,36 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     <group unless="$(arg multimaster)">
       <include file="$(find umbc_husky)/launch/control.launch">
         <arg name="multimaster" value="$(arg multimaster)"/>
-        <arg name="laser_enabled" value="$(arg laser_enabled)"/>
-        <arg name="kinect_enabled" value="$(arg kinect_enabled)"/>
+        <arg name="arm_enabled" value="$(arg arm_enabled)"/>
         <arg name="urdf_extras" value="$(arg urdf_extras)"/>
       </include>
     </group>
 
-    <group if="$(arg kinect_enabled)">
-      <!-- Include poincloud_to_laserscan if simulated Kinect is attached -->
-      <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan" output="screen">
-          <remap from="cloud_in" to="camera/depth/points"/>
-          <remap from="scan" to="scan"/>
-          <rosparam>
-              target_frame: base_link # Leave empty to output scan in the pointcloud frame
-              tolerance: 1.0
-              min_height: 0.05
-              max_height: 1.0
+    <!-- Include poincloud_to_laserscan if simulated Kinect is attached -->
+    <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan" output="screen">
+        <remap from="cloud_in" to="camera/depth_filtered/points"/>
+        <remap from="scan" to="scan"/>
+        <rosparam>
+            target_frame: base_link # Leave empty to output scan in the pointcloud frame
+            tolerance: 1.0
+            min_height: 0.05
+            max_height: 1.0
 
-              angle_min: -0.52 # -30.0*M_PI/180.0
-              angle_max: 0.52 # 30.0*M_PI/180.0
-              angle_increment: 0.005 # M_PI/360.0
-              scan_time: 0.3333
-              range_min: 0.45
-              range_max: 4.0
-              use_inf: true
+            angle_min: -0.52 # -30.0*M_PI/180.0
+            angle_max: 0.52 # 30.0*M_PI/180.0
+            angle_increment: 0.005 # M_PI/360.0
+            scan_time: 0.3333
+            range_min: 0.45
+            range_max: 4.0
+            use_inf: true
 
-              # Concurrency level, affects number of pointclouds queued for processing and number of threads used
-              # 0 : Detect number of cores
-              # 1 : Single threaded
-              # 2->inf : Parallelism level
-              concurrency_level: 1
-          </rosparam>
-      </node>
-
-    </group>
+            # Concurrency level, affects number of pointclouds queued for processing and number of threads used
+            # 0 : Detect number of cores
+            # 1 : Single threaded
+            # 2->inf : Parallelism level
+            concurrency_level: 1
+        </rosparam>
+    </node>
 
     <!-- Spawn robot in gazebo -->
     <node name="spawn_husky_model" pkg="gazebo_ros" type="spawn_model"
@@ -104,8 +99,16 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
               -unpause
               -urdf
               -param robot_description
-              -model $(arg robot_namespace)" />
-
+              -model $(arg robot_namespace)
+              -J $(arg kinova_robotType)_joint_1 0.0
+              -J $(arg kinova_robotType)_joint_2 2.9
+              -J $(arg kinova_robotType)_joint_3 1.3
+              -J $(arg kinova_robotType)_joint_4 -2.07
+              -J $(arg kinova_robotType)_joint_5 1.4
+              -J $(arg kinova_robotType)_joint_6 0.0
+              -J $(arg kinova_robotType)_joint_finger_1 1.0
+              -J $(arg kinova_robotType)_joint_finger_2 1.0
+              -J $(arg kinova_robotType)_joint_finger_3 1.0" />
   </group>
 
 </launch>

@@ -27,8 +27,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 
   <arg name="world_name" default="worlds/empty.world"/>
 
-  <arg name="laser_enabled" default="false"/>
-  <arg name="kinect_enabled" default="true"/>
+  <arg name="arm_enabled" default="false"/>
+
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(arg world_name)"/> <!-- world_name is wrt GAZEBO_RESOURCE_PATH environment variable -->
@@ -40,8 +40,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   </include>
 
   <include file="$(find umbc_husky)/launch/spawn_husky.launch">
-    <arg name="laser_enabled" value="$(arg laser_enabled)"/>
-    <arg name="kinect_enabled" value="$(arg kinect_enabled)"/>
+    <arg name="arm_enabled" value="$(arg arm_enabled)"/>
+
   </include>
 
 </launch>
