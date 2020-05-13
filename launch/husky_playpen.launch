@@ -28,11 +28,12 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 
   <arg name="arm_enabled" default="true"/>
 
-  <include file="$(find husky_gazebo)/launch/playpen.launch" />
-
   <include file="$(find umbc_husky)/launch/spawn_husky.launch">
     <arg name="arm_enabled" value="$(arg arm_enabled)"/>
-
   </include>
+
+  <include file="$(find umbc_husky)/launch/playpen.launch" />
+
+
 
 </launch>

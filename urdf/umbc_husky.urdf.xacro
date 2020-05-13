@@ -148,7 +148,6 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-      <robotNamespace>$(arg robot_namespace)</robotNamespace>
     </plugin>
   </gazebo>
 
@@ -230,7 +229,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     <joint name="top_plate_to_right_arm" type="fixed">
       <parent link="top_plate_link"/>
       <child link="right_arm_link"/>
-      <origin xyz="0.21 -0.197 0.315" rpy="0 0 1.57079633" />
+      <!-- org <origin xyz="0.21 -0.197 0.315" rpy="0 0 1.57079633" /> -->
+      <origin xyz="0.21 -0.197 0.315" rpy="0 0 0" />
     </joint>
     <xacro:j2n6s300 base_parent="right_arm_link" prefix="j2n6s300" />
   </xacro:if >

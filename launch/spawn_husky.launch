@@ -25,73 +25,32 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 -->
 <launch>
 
-  <arg name="multimaster" default="false"/>
+  <arg name="multimaster" default="$(optenv ROBOT_MULTIMASTER false)"/>
+  <arg name="simulation" default="$(optenv ROBOT_SIMULATION false)"/>
+  <arg name="robot_namespace" default="$(optenv ROBOT_NAMESPACE robot)"/>
 
-  <arg name="robot_namespace" default="/"/>
+  <arg name="config_extras"
+       default="$(eval optenv('HUSKY_CONFIG_EXTRAS', find('husky_control') + '/config/empty.yaml'))"/>
+
+  <arg name="arm_enabled" default="true"/>
+  <arg name="kinova_robotType" default="j2n6s300"/>
+  <arg name="urdf_extras" default="$(optenv HUSKY_URDF_EXTRAS)"/>
 
   <arg name="x" default="0.0"/>
   <arg name="y" default="0.0"/>
-  <arg name="z" default="1.0"/>
+  <arg name="z" default="0.0"/>
   <arg name="yaw" default="0.0"/>
 
-  <arg name="kinova_robotType" default="j2n6s300"/>
-  <arg name="arm_enabled" default="true"/>
-  <arg name="urdf_extras" default="$(optenv HUSKY_URDF_EXTRAS)"/>
+  <!-- Load robot description -->
+  <!-- <include file="$(find umbc_husky)/launch/description.launch" >
+    <arg name="arm_enabled" default="$(arg arm_enabled)"/>
+    <arg name="urdf_extras" default="$(arg urdf_extras)"/>
+  </include>  -->
+  
+  <param name="robot_description" command="cat $(find umbc_husky)/urdf/test.urdf" />
 
-  <group ns="$(arg robot_namespace)">
-    <group if="$(arg multimaster)">
-      <include file="$(find umbc_husky)/launch/description.launch" >
-        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
-        <arg name="arm_enabled" default="$(arg arm_enabled)"/>
-        <arg name="urdf_extras" default="$(arg urdf_extras)"/>
-      </include>
-      <include file="$(find multimaster_launch)/launch/multimaster_gazebo_robot.launch">
-        <arg name="gazebo_interface" value="$(find husky_control)/config/gazebo_interface.yaml" />
-        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
-      </include>
-
-      <!-- For multimaster bringup, need to load the controller config -->
-      <rosparam command="load" file="$(find husky_control)/config/control.yaml" />
-    </group>
-
-    <!-- For single master bringup, run robot control on the gazebo master -->
-    <!-- Note that husky_description/description.launch is already included in husky_control/control.launch. -->
-    <group unless="$(arg multimaster)">
-      <include file="$(find umbc_husky)/launch/control.launch">
-        <arg name="multimaster" value="$(arg multimaster)"/>
-        <arg name="arm_enabled" value="$(arg arm_enabled)"/>
-        <arg name="urdf_extras" value="$(arg urdf_extras)"/>
-      </include>
-    </group>
-
-    <!-- Include poincloud_to_laserscan if simulated Kinect is attached -->
-    <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan" output="screen">
-        <remap from="cloud_in" to="camera/depth_filtered/points"/>
-        <remap from="scan" to="scan"/>
-        <rosparam>
-            target_frame: base_link # Leave empty to output scan in the pointcloud frame
-            tolerance: 1.0
-            min_height: 0.05
-            max_height: 1.0
-
-            angle_min: -0.52 # -30.0*M_PI/180.0
-            angle_max: 0.52 # 30.0*M_PI/180.0
-            angle_increment: 0.005 # M_PI/360.0
-            scan_time: 0.3333
-            range_min: 0.45
-            range_max: 4.0
-            use_inf: true
-
-            # Concurrency level, affects number of pointclouds queued for processing and number of threads used
-            # 0 : Detect number of cores
-            # 1 : Single threaded
-            # 2->inf : Parallelism level
-            concurrency_level: 1
-        </rosparam>
-    </node>
-
-    <!-- Spawn robot in gazebo -->
-    <node name="spawn_husky_model" pkg="gazebo_ros" type="spawn_model"
+  <!-- Spawn robot in gazebo '' -->
+  <node name="spawn_husky_model" pkg="gazebo_ros" type="spawn_model"
         args="-x $(arg x)
               -y $(arg y)
               -z $(arg z)
@@ -109,6 +68,59 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
               -J $(arg kinova_robotType)_joint_finger_1 1.0
               -J $(arg kinova_robotType)_joint_finger_2 1.0
               -J $(arg kinova_robotType)_joint_finger_3 1.0" />
-  </group>
+
+  <!-- ORG -->
+  <!-- Load controller configuration for husky -->
+  <rosparam command="load" file="$(find husky_control)/config/control.yaml" />
+  <node name="base_controller_spawner" pkg="controller_manager" type="spawner" ns="/"
+        args="husky_joint_publisher
+              husky_velocity_controller"/>
+
+  <!-- Load controllers for arm (trajectory controllers)-->
+  <rosparam command="load" file="$(find umbc_husky)/config/$(arg kinova_robotType)_control.yaml" />
+  <node name="$(arg kinova_robotType)_trajectory_controller" pkg="controller_manager" type="spawner" 
+        args="effort_finger_trajectory_controller
+              effort_joint_trajectory_controller   
+              finger_tip_1_position_controller
+              finger_tip_2_position_controller 
+              finger_tip_3_position_controller
+              joint_state_controller"/>
+  <!-- ORG -->
+
+
+  <!-- all in 1 Load controller configuration for husky -->
+  <!-- <rosparam command="load" file="$(find husky_control)/config/control.yaml" />
+  <rosparam command="load" file="$(find kinova_control)/config/$(arg kinova_robotType)_control.yaml" />
+  <node name="base_controller_spawner" pkg="controller_manager" type="spawner"
+        args="husky_joint_publisher
+              husky_velocity_controller
+              effort_joint_trajectory_controller
+              effort_finger_trajectory_controller    
+              finger_tip_1_position_controller
+              finger_tip_2_position_controller 
+              finger_tip_3_position_controller
+              joint_state_controller"/>-->
+
+
+  <!-- Start EKF for localization -->
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization">
+    <rosparam command="load" file="$(find husky_control)/config/localization.yaml" />
+  </node>
+
+  <node pkg="interactive_marker_twist_server" type="marker_server" name="twist_marker_server" output="screen"/>
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <node pkg="twist_mux" type="twist_mux" name="twist_mux">
+    <rosparam command="load" file="$(find husky_control)/config/twist_mux.yaml" />
+    <remap from="cmd_vel_out" to="husky_velocity_controller/cmd_vel"/>
+  </node>
+ 
+  <node name="command_robot_home_pose" pkg="kinova_control" type="move_robot.py"
+        respawn="false" output="screen" args="$(arg kinova_robotType)">       
+  </node>
+
+  <!-- Override the default control parameters, see config/empty.yaml for default. -->
+  <rosparam command="load" file="$(arg config_extras)" />
 
 </launch>
