@@ -40,10 +40,9 @@ class ArmController:
 
         theta = math.asin(y/h)
 
-        print(p)
-        print(theta)
+	theta = min(max(-math.pi, theta), math.pi)
 
-        #foward +1.5 left -1.5 right
+        #foward +1.57 left -1.57 right
         angles = [-theta, 1.9, 3.3, 2.2, 2.4,0.0]
 
         self.moveJoint(angles, self.prefix, self.nbJoints)
