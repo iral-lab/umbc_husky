@@ -1,4 +1,4 @@
-
+j2n6s300:
   effort_finger_trajectory_controller:
     constraints:
       goal_time: 1.0

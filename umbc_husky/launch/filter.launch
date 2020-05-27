@@ -1,0 +1,18 @@
+<launch>
+  <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
+
+  <node pkg="nodelet" type="nodelet" name="cropbox" args="load pcl/CropBox /pcl_manager" output="screen">
+    <remap from="~input" to="/camera/depth/points" />
+    <remap from="~output" to="/camera/filtered_depth/points" />
+    <rosparam>
+      filter_limit_negative: True
+      min_x: -0.5
+      max_x: 0.5
+      min_y: -1.0
+      max_y: 1.0
+      min_z: 0.0
+      max_z: 0.75
+    </rosparam>
+  </node>
+
+</launch>

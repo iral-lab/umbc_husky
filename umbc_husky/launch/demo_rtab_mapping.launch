@@ -50,7 +50,7 @@
 	
 	  <!-- inputs -->
 	  <remap from="scan"            to="/scan"/>
-	  <remap from="scan_cloud"      to="/camera/depth/points"/>
+	  <remap from="scan_cloud"      to="/camera/filtered_depth/points"/>
 	  <remap from="rgb/image"       to="$(arg rgb_topic)"/>
   	  <remap from="depth/image"     to="$(arg depth_topic)"/>
   	  <remap from="rgb/camera_info" to="$(arg camera_info_topic)"/>

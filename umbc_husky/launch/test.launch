@@ -38,18 +38,16 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 
   <arg name="x" default="0.0"/>
   <arg name="y" default="0.0"/>
-  <arg name="z" default="0.0"/>
+  <arg name="z" default="1.0"/>
   <arg name="yaw" default="0.0"/>
 
   <!-- Load robot description -->
-  <!-- <include file="$(find umbc_husky)/launch/description.launch" >
+  <include file="$(find umbc_husky)/launch/description.launch" >
     <arg name="arm_enabled" default="$(arg arm_enabled)"/>
     <arg name="urdf_extras" default="$(arg urdf_extras)"/>
-  </include>  -->
-  
-  <param name="robot_description" command="cat $(find umbc_husky)/urdf/umbc_husky_full.urdf" />
+  </include>
 
-  <!-- Spawn robot in gazebo '' -->
+  <!-- Spawn robot in gazebo -->
   <node name="spawn_husky_model" pkg="gazebo_ros" type="spawn_model"
         args="-x $(arg x)
               -y $(arg y)
@@ -69,38 +67,21 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
               -J $(arg kinova_robotType)_joint_finger_2 1.0
               -J $(arg kinova_robotType)_joint_finger_3 1.0" />
 
-  <!-- ORG -->
-  <!-- Load controller configuration for husky -->
+  <!-- Load controller configuration -->
   <rosparam command="load" file="$(find husky_control)/config/control.yaml" />
-  <node name="base_controller_spawner" pkg="controller_manager" type="spawner" ns="/"
-        args="husky_joint_publisher
-              husky_velocity_controller"/>
-
-  <!-- Load controllers for arm (trajectory controllers)-->
-  <rosparam command="load" file="$(find umbc_husky)/config/$(arg kinova_robotType)_control.yaml" />
-  <node name="$(arg kinova_robotType)_trajectory_controller" pkg="controller_manager" type="spawner" 
-        args="effort_finger_trajectory_controller
-              effort_joint_trajectory_controller   
-              finger_tip_1_position_controller
-              finger_tip_2_position_controller 
-              finger_tip_3_position_controller
-              joint_state_controller"/>
-  <!-- ORG -->
-
-
-  <!-- all in 1 Load controller configuration for husky -->
-  <!-- <rosparam command="load" file="$(find husky_control)/config/control.yaml" />
-  <rosparam command="load" file="$(find kinova_control)/config/$(arg kinova_robotType)_control.yaml" />
   <node name="base_controller_spawner" pkg="controller_manager" type="spawner"
         args="husky_joint_publisher
-              husky_velocity_controller
-              effort_joint_trajectory_controller
+              husky_velocity_controller"/> 
+
+  <!-- Load controllers for arm (trajectory controllers)-->
+  <rosparam command="load" file="$(find kinova_control)/config/$(arg kinova_robotType)_control.yaml" />
+  <node name="$(arg kinova_robotType)_trajectory_controller" pkg="controller_manager" type="spawner" ns="$(arg kinova_robotType)"
+        args="effort_joint_trajectory_controller
               effort_finger_trajectory_controller    
               finger_tip_1_position_controller
               finger_tip_2_position_controller 
               finger_tip_3_position_controller
-              joint_state_controller"/>-->
-
+              joint_state_controller"/>
 
   <!-- Start EKF for localization -->
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization">
@@ -115,7 +96,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     <rosparam command="load" file="$(find husky_control)/config/twist_mux.yaml" />
     <remap from="cmd_vel_out" to="husky_velocity_controller/cmd_vel"/>
   </node>
- 
+  
   <node name="command_robot_home_pose" pkg="kinova_control" type="move_robot.py"
         respawn="false" output="screen" args="$(arg kinova_robotType)">       
   </node>

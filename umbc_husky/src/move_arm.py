@@ -20,10 +20,10 @@ class ArmController:
 
         self.home_angles = [0.0,2.9,1.3,4.2,1.4,0.0]
 
-        arm_topic_name = '/effort_joint_trajectory_controller/command'
+        arm_topic_name = self.prefix + '/effort_joint_trajectory_controller/command'
         self.arm_pub = rospy.Publisher(arm_topic_name, JointTrajectory, queue_size=1)
 
-        finger_topic_name = '/effort_finger_trajectory_controller/command'
+        finger_topic_name = self.prefix + '/effort_finger_trajectory_controller/command'
         self.finger_pub = rospy.Publisher(finger_topic_name, JointTrajectory, queue_size=1)  
         self.sub = rospy.Subscriber("/indicate", PointStamped, self.indicate)
 
