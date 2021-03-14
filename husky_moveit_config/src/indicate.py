@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import sys
 import math
 import rospy
+import tf
 import moveit_commander
 from moveit_commander.conversions import pose_to_list
 import moveit_msgs.msg
@@ -72,6 +73,8 @@ class IndicateService:
     def __init__(self):
         rospy.init_node('indicate_service')
 
+        self.listener = tf.TransformListener()
+
         moveit_commander.roscpp_initialize(sys.argv)
 
         robot = moveit_commander.RobotCommander()
@@ -91,6 +94,7 @@ class IndicateService:
         self.move_group = move_group
         self.display_trajectory_publisher = display_trajectory_publisher
         self.planning_frame = planning_frame
+        print(planning_frame)
         self.eef_link = eef_link
         self.group_names = group_names
 
@@ -101,7 +105,13 @@ class IndicateService:
         current_pose = self.move_group.get_current_pose().pose
         pose_goal = Pose()
 
-        pose_goal.position = get_ee_position(req.point.point, 0.8)
+        self.listener.waitForTransform(req.point.header.frame_id, "/base_link",  rospy.Time(0),rospy.Duration(4.0))
+        start = self.listener.transformPoint("/base_link", req.point)
+        pose_goal.position = start.point
+
+
+        '''
+        get_ee_position(req.point.point, 0.8)
         pose_goal.position.z = 0.85
         q = get_ee_orientation(pose_goal.position, req.point.point)
 
@@ -109,6 +119,7 @@ class IndicateService:
         pose_goal.orientation.y = q[1]
         pose_goal.orientation.z = q[2] 
         pose_goal.orientation.w = q[3]
+        '''
                 
         self.move_group.set_pose_target(pose_goal)
         self.move_group.go(wait=True)

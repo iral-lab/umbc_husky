@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   Indicate.srv
+
+  Collect.srv
 )
 
 generate_messages(

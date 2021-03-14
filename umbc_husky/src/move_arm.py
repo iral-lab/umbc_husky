@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 import time
 import math
 import rospy
@@ -14,46 +14,64 @@ class ArmController:
         self.prefix = 'j2n6s300'
         self.nbJoints = 6 
         self.nbfingers = 3
+        self.init = False
 
         self.listener = tf.TransformListener()
 
-
-        self.home_angles = [0.0,2.9,1.3,4.2,1.4,0.0]
+#        self.home_angles = [0.0,math.pi/2,2*math.pi,0,0,0]
+        self.home_angles = [0.0, 2.9-math.pi/2, 1.3+3*math.pi/2, -2.07, 1.4, 0.0]
 
         arm_topic_name = self.prefix + '/effort_joint_trajectory_controller/command'
         self.arm_pub = rospy.Publisher(arm_topic_name, JointTrajectory, queue_size=1)
 
         finger_topic_name = self.prefix + '/effort_finger_trajectory_controller/command'
         self.finger_pub = rospy.Publisher(finger_topic_name, JointTrajectory, queue_size=1)  
-        self.sub = rospy.Subscriber("/indicate", PointStamped, self.indicate)
+        self.sub = rospy.Subscriber("/indicate", PointStamped, self.indicate, queue_size=1)
 
         rospy.spin()
 
     def indicate(self, point):
-
-        self.listener.waitForTransform("/j2n6s300_link_base", point.header.frame_id, rospy.Time(0),rospy.Duration(4.0))
+        now = rospy.Time.now()
+        self.listener.waitForTransform("/j2n6s300_link_base", point.header.frame_id, now, rospy.Duration(1.0))
+        point.header.stamp = now
         p = self.listener.transformPoint("/j2n6s300_link_base", point)
 
-        x = p.point.x
-        y = p.point.y
-        h = math.sqrt(x*x + y*y)
+        # Point relative to base of arm
+        x0, y0, z0 = point.point.x, point.point.y, point.point.z
+#        print(x0,y0, z0)
 
-        theta = math.asin(y/h)
+        # Point relative to robot
+        x1, y1, z1 = p.point.x, p.point.y, p.point.z
 
-	theta = min(max(-math.pi, theta), math.pi)
+        # Distance from base to target
+        r = min(1, max(0, math.sqrt(x0**2+y0**2+z0**2)))
 
-        #foward +1.57 left -1.57 right
-        angles = [-theta, 1.9, 3.3, 2.2, 2.4,0.0]
+        # Distance from base to target on plane
+        R = min(1, max(0, math.sqrt(x0**2+y0**2)))
 
-        self.moveJoint(angles, self.prefix, self.nbJoints)
-        self.moveFingers([1, 1, 1], self.prefix, self.nbfingers)
+        # Length of upperarm
+        j1 = 0.51
+
+        #Length of lower arm
+        j2 = 0.51
+        if r > 0.01:
+            alpha = self.home_angles[1]+math.acos((j1**2+r**2-j2**2)/(2*j1*r))+math.atan2(z0, R)
+            beta = self.home_angles[2] - math.acos((j2**2+j1**2-r**2)/(2*j1*j2))
+            theta = self.home_angles[0]-math.atan2(y0, x0) # Base Rotation
+            #foward +1.57 left -1.57 right
+            angles = [theta, alpha, beta, math.pi/2,0,0]
+
+            print(angles)
+
+            self.moveJoint(angles, self.prefix, self.nbJoints)
+        #self.moveFingers([1, 1, 1], self.prefix, self.nbfingers)
  
     def moveJoint(self, jointcmds, prefix, nbJoints):
 
         jointCmd = JointTrajectory()  
         point = JointTrajectoryPoint()
         jointCmd.header.stamp = rospy.Time.now() + rospy.Duration.from_sec(0.0);  
-        point.time_from_start = rospy.Duration.from_sec(5.0)
+        point.time_from_start = rospy.Duration.from_sec(0.5)
         for i in range(0, nbJoints):
             jointCmd.joint_names.append(prefix +'_joint_'+str(i+1))
             point.positions.append(jointcmds[i])
@@ -61,12 +79,7 @@ class ArmController:
             point.accelerations.append(0)
             point.effort.append(0) 
         jointCmd.points.append(point)
-        rate = rospy.Rate(100)
-        count = 0
-        while (count < 50):
-            self.arm_pub.publish(jointCmd)
-            count = count + 1
-            rate.sleep()     
+        self.arm_pub.publish(jointCmd)
 
     def moveFingers(self, jointcmds,prefix,nbJoints):
         jointCmd = JointTrajectory()  
