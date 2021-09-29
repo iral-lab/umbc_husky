@@ -60,11 +60,14 @@ class Controller:
         #         feedback.data = "Unknown action"
         #         self.cont_feedback_pub.publish(feedback)
 
-        self.move_object(data, self.basket_location)
+        result = self.move_object(data, self.basket_location)
 
         # populate done feedback and publish
         feedback.data = "Done"
         self.cont_feedback_pub.publish(feedback)
+
+        return result
+
 
     def move_object(self, start, end):
         # create feedback message
@@ -101,6 +104,8 @@ class Controller:
         release.data = "released"
         self.button_pub.publish(release)
         # TODO: maybe the grabbed and release can be object properties that this controller can do...
+
+        return True
 
 if __name__ == '__main__':
     controller = Controller()
