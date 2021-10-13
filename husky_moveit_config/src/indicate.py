@@ -106,9 +106,10 @@ class IndicateService:
         pose_goal = Pose()
 
         self.listener.waitForTransform(req.point.header.frame_id, "/base_link",  rospy.Time(0),rospy.Duration(4.0))
-        start = self.listener.transformPoint("/base_link", req.point)
-        pose_goal.position = start.point
-
+        p = self.listener.transformPoint("/base_link", req.point)
+        pose_goal.position = p.point
+        pose_goal.orientation.w = 1.0
+        self.move_group.set_max_velocity_scaling_factor(1.0)
 
         '''
         get_ee_position(req.point.point, 0.8)

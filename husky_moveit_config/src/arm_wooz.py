@@ -6,16 +6,16 @@ from moveit_commander.conversions import pose_to_list
 import moveit_msgs.msg
 from std_msgs.msg import String
 
-class wooz_hand_control:
+class wooz_arm_control:
     def __init__(self):
-        rospy.init_node('wooz_hand_control')
+        rospy.init_node('wooz_arm_control')
 
         moveit_commander.roscpp_initialize(sys.argv)
 
         robot = moveit_commander.RobotCommander()
         scene = moveit_commander.PlanningSceneInterface()
 
-        group_name = "right_hand"
+        group_name = "right_arm"
         move_group = moveit_commander.MoveGroupCommander(group_name)
         planning_frame = move_group.get_planning_frame()
         eef_link = move_group.get_end_effector_link()
@@ -39,18 +39,17 @@ class wooz_hand_control:
         print(buttons_str.data)
         target = None
 
-        if (buttons_str.data == "grabbed") :
-            target = "close"
-        if (buttons_str.data == "released") :
-            target = "open"
+        if (buttons_str.data == "home") :
+            target = "test_home"
 
         print(target)
 
         if (target != None):
+            self.move_group.set_max_velocity_scaling_factor(1.0)
             self.move_group.set_named_target(target)
             self.move_group.go(wait=True)
             self.move_group.stop()
             self.move_group.clear_pose_targets()
 
 if __name__ == "__main__":
-    wooz_hand_control()
+    wooz_arm_control()

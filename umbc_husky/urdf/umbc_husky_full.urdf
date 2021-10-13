@@ -363,12 +363,14 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <!-- Add mesh for kinect -->
   <link name="camera_link">
     <origin rpy="0 0 0" xyz="0 0 0"/>
+<!-- 
     <visual>
       <origin rpy="0 0 1.570795" xyz="0 0 0"/>
       <geometry>
         <mesh filename="package://husky_description/meshes/accessories/kinect.dae"/>
       </geometry>
     </visual>
+ -->
     <collision>
       <geometry>
         <box size="0.07 0.3 0.09"/>
@@ -381,6 +383,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     <child link="camera_frame_optical"/>
   </joint>
   <link name="camera_frame_optical"/>
+  <!-- -->
   <gazebo reference="camera_link">
     <sensor name="camera" type="depth">
       <always_on>true</always_on>
@@ -388,7 +391,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
       <camera>
         <horizontal_fov>1.04719666667</horizontal_fov>
         <image>
-          <!-- <format>R8G8B8</format> https://github.com/ros-simulation/gazebo_ros_pkgs/issues/484-->
+          <format>R8G8B8</format> https://github.com/ros-simulation/gazebo_ros_pkgs/issues/484
           <format>B8G8R8</format>
           <width>640</width>
           <height>480</height>
@@ -419,6 +422,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
       </plugin>
     </sensor>
   </gazebo>
+  <!-- -->
   <gazebo>
     <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
     </plugin>
@@ -474,6 +478,11 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
         <mesh filename="package://husky_description/meshes/top_plate.dae"/>
       </geometry>
     </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://husky_description/meshes/top_plate.dae"/>
+      </geometry>
+    </collision>
   </link>
   <joint name="top_plate_to_upper_top_plate" type="fixed">
     <parent link="top_plate_link"/>
@@ -573,6 +582,11 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
       </material>
     </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://kinova_description/meshes/shoulder.dae"/>
+      </geometry>
+    </collision>
     <visual>
       <geometry>
         <mesh filename="package://kinova_description/meshes/ring_big.dae"/>
@@ -580,7 +594,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://kinova_description/meshes/shoulder.dae"/>
+        <mesh filename="package://kinova_description/meshes/ring_big.dae"/>
       </geometry>
     </collision>
     <inertial>
@@ -627,6 +641,11 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
       </material>
     </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://kinova_description/meshes/arm.dae"/>
+      </geometry>
+    </collision>
     <visual>
       <geometry>
         <mesh filename="package://kinova_description/meshes/ring_big.dae"/>
@@ -634,7 +653,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://kinova_description/meshes/arm.dae"/>
+        <mesh filename="package://kinova_description/meshes/ring_big.dae"/>
       </geometry>
     </collision>
     <inertial>
@@ -681,6 +700,11 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
       </material>
     </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://kinova_description/meshes/forearm.dae"/>
+      </geometry>
+    </collision>
     <visual>
       <geometry>
         <mesh filename="package://kinova_description/meshes/ring_big.dae"/>
@@ -688,7 +712,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://kinova_description/meshes/forearm.dae"/>
+        <mesh filename="package://kinova_description/meshes/ring_big.dae"/>
       </geometry>
     </collision>
     <inertial>
@@ -735,6 +759,11 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
       </material>
     </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://kinova_description/meshes/wrist.dae"/>
+      </geometry>
+    </collision>
     <visual>
       <geometry>
         <mesh filename="package://kinova_description/meshes/ring_small.dae"/>
@@ -742,7 +771,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://kinova_description/meshes/wrist.dae"/>
+        <mesh filename="package://kinova_description/meshes/ring_small.dae"/>
       </geometry>
     </collision>
     <inertial>
@@ -789,6 +818,11 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
       </material>
     </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://kinova_description/meshes/wrist.dae"/>
+      </geometry>
+    </collision>
     <visual>
       <geometry>
         <mesh filename="package://kinova_description/meshes/ring_small.dae"/>
@@ -796,7 +830,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://kinova_description/meshes/wrist.dae"/>
+        <mesh filename="package://kinova_description/meshes/ring_small.dae"/>
       </geometry>
     </collision>
     <inertial>
