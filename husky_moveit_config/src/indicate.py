@@ -15,7 +15,9 @@ from husky_moveit_config.srv import Indicate
 def norm(x):
     return math.sqrt(x[0]*x[0] + x[1]*x[1] + x[2]*x[2])
 
-
+#the point may be farther than the robot may reach
+#project the point onot a spere r merters from the robots base
+#returns this position
 def get_ee_position(p, r):
     norm = math.sqrt(p.x*p.x + p.y*p.y + p.z*p.z)
     
@@ -77,51 +79,26 @@ class IndicateService:
 
         moveit_commander.roscpp_initialize(sys.argv)
 
-        robot = moveit_commander.RobotCommander()
-        scene = moveit_commander.PlanningSceneInterface()
+        self.robot = moveit_commander.RobotCommander()
+        self.scene = moveit_commander.PlanningSceneInterface()
 
-        group_name = "right_arm"
-        move_group = moveit_commander.MoveGroupCommander(group_name)
-        planning_frame = move_group.get_planning_frame()
-        eef_link = move_group.get_end_effector_link()
-        group_names = robot.get_group_names()
+        self.group_name = "right_arm"
+        self.move_group = moveit_commander.MoveGroupCommander(self.group_name)
 
-        display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
-                                                    moveit_msgs.msg.DisplayTrajectory,
-                                                    queue_size=20)
-        self.robot = robot
-        self.scene = scene
-        self.move_group = move_group
-        self.display_trajectory_publisher = display_trajectory_publisher
-        self.planning_frame = planning_frame
-        print(planning_frame)
-        self.eef_link = eef_link
-        self.group_names = group_names
 
         s = rospy.Service('indicate', Indicate, self.serv_callback)
         rospy.spin()
 
     def serv_callback(self, req):
-        current_pose = self.move_group.get_current_pose().pose
         pose_goal = Pose()
 
         self.listener.waitForTransform(req.point.header.frame_id, "/base_link",  rospy.Time(0),rospy.Duration(4.0))
         p = self.listener.transformPoint("/base_link", req.point)
+
         pose_goal.position = p.point
         pose_goal.orientation.w = 1.0
-        self.move_group.set_max_velocity_scaling_factor(1.0)
 
-        '''
-        get_ee_position(req.point.point, 0.8)
-        pose_goal.position.z = 0.85
-        q = get_ee_orientation(pose_goal.position, req.point.point)
-
-        pose_goal.orientation.x = q[0]
-        pose_goal.orientation.y = q[1]
-        pose_goal.orientation.z = q[2] 
-        pose_goal.orientation.w = q[3]
-        '''
-                
+        self.move_group.set_max_velocity_scaling_factor(1.0)                
         self.move_group.set_pose_target(pose_goal)
         self.move_group.go(wait=True)
         self.move_group.stop()

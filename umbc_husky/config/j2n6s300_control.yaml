@@ -57,33 +57,33 @@ j2n6s300:
       stopped_velocity_tolerance: 0.02
     gains:
       j2n6s300_joint_1:
-        d: 0
-        i: 0
+        d: 0.0
+        i: 0.00
         i_clamp: 10
         p: 5000
       j2n6s300_joint_2:
-        d: 0
-        i: 0
+        d: 0.0
+        i: 0.00
         i_clamp: 10
         p: 5000
       j2n6s300_joint_3:
-        d: 0
-        i: 0
+        d: 0.0
+        i: 0.00
         i_clamp: 10
         p: 5000
       j2n6s300_joint_4:
-        d: 0
-        i: 0
+        d: 0.0
+        i: 0.00
         i_clamp: 10
         p: 500
       j2n6s300_joint_5:
-        d: 0
-        i: 0
+        d: 0.0
+        i: 0.00
         i_clamp: 10
-        p: 200
+        p: 500
       j2n6s300_joint_6:
-        d: 0
-        i: 0
+        d: 0.0
+        i: 0.00
         i_clamp: 10
         p: 500
     joints:

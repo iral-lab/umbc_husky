@@ -383,7 +383,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     <child link="camera_frame_optical"/>
   </joint>
   <link name="camera_frame_optical"/>
-  <!-- -->
+  <!-- 
   <gazebo reference="camera_link">
     <sensor name="camera" type="depth">
       <always_on>true</always_on>
@@ -422,7 +422,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
       </plugin>
     </sensor>
   </gazebo>
-  <!-- -->
+  -->
   <gazebo>
     <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
     </plugin>
@@ -1153,5 +1153,4 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     </actuator>
   </transmission>
 </robot>
-
 
