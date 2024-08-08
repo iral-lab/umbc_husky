@@ -1,0 +1,82 @@
+<launch>    
+    <arg name="use_sim_time" value="true"/>
+    <param name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="approx_sync_max_interval"   default="0.21" />
+
+  <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
+
+  <!-- Run a passthrough filter to clean NaNs -->
+  <node pkg="nodelet" type="nodelet" name="passthrough" args="load pcl/CropBox pcl_manager" output="screen">
+    <remap from="~input" to="/unity/camera/depth/points" />
+    <remap from="~output" to="/unity/camera/depth/self_filterd_points" />
+    <rosparam>
+      min_x: -0.5
+      max_x:  0.5
+      min_y: -1.0
+      max_y:  1.0
+      min_z:  0.0
+      max_z:  0.8
+      keep_organized: True
+      negative: True
+    </rosparam>
+  </node>
+<!--
+~min_x (double, default: -1.0)
+~max_x (double, default: 1.0)
+~min_y (double, default: -1.0)
+~max_y (double, default: 1.0)
+~min_z (double, default: -1.0)
+~max_z (double, default: 1.0)
+~keep_organized (bool, default: False) 
+~negative (bool, default: False) 
+
+/unity/camera/depth/camera_info
+/unity/camera/depth/image_raw
+/unity/camera/depth/points
+/unity/camera/overhead/compressed
+/unity/camera/rgb/camera_info
+/unity/camera/rgb/compressed
+/unity/camera/rgb/image_raw    
+-->
+  <group ns="rtabmap">
+
+    <node pkg="nodelet" type="nodelet" name="pointcloud_to_depthimage" args="standalone rtabmap_util/pointcloud_to_depthimage" output="screen">
+      <remap from="cloud"       to="/unity/camera/depth/self_filterd_points"/>
+      <remap from="camera_info" to="/unity/camera/rgb/camera_info"/>
+      <remap from="image"       to="/unity/camera/depth/filtered_image"/>
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="rgbd_sync" args="standalone rtabmap_sync/rgbd_sync" output="screen">
+      <remap from="rgb/image"       to="/unity/camera/rgb/image_raw"/>
+      <remap from="depth/image"     to="/unity/camera/depth/filtered_image"/>
+      <remap from="rgb/camera_info" to="/unity/camera/rgb/camera_info"/>
+      <remap from="rgbd_image"      to="rgbd_image"/> <!-- output -->
+      <!-- Should be true for not synchronized camera topics 
+           (e.g., false for kinectv2, zed, realsense, true for xtion, kinect360)-->
+      <param name="approx_sync"       value="true"/> 
+      <param name="approx_sync_max_interval" value="$(arg approx_sync_max_interval)"/>
+      <param name="use_sim_time" value="$(arg use_sim_time)"/>
+    </node>
+
+    <node name="rtabmap" pkg="rtabmap_slam" type="rtabmap" output="screen" args="--delete_db_on_start">
+          <param name="frame_id" type="string" value="base_link"/>
+          <param name="subscribe_depth" type="bool" value="false"/>
+          <param name="subscribe_rgbd" type="bool" value="true"/>
+          <!--<remap from="odom" to="/base_controller/odom"/>-->
+          <!--<remap from="odom" to="/husky_velocity_controller/odom"/>-->
+          <remap from="odom" to="/odometry/filtered"/>
+          <remap from="rgbd_image" to="rgbd_image"/>
+          <param name="queue_size" type="int" value="10"/>
+          <!-- RTAB-Map's parameters -->
+          <param name="RGBD/AngularUpdate"        type="string" value="0.01"/>
+          <param name="RGBD/LinearUpdate"         type="string" value="0.01"/>
+          <param name="RGBD/OptimizeFromGraphEnd" type="string" value="false"/>
+          <param name="use_sim_time" value="$(arg use_sim_time)"/>
+          <param name="approx_sync"       value="true"/> 
+    </node>
+  </group>
+
+  <!-- Navigation stuff (move_base) -->
+  <include file="$(find husky_navigation)/launch/move_base.launch"/>
+   
+</launch>
